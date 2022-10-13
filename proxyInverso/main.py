@@ -4,15 +4,15 @@ import threading
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 SERVER_IP = "3.95.202.86"
 SERVER_PORT = 8080
-HTTP_HEADER_DELIMITER = b'\r\n\r\n'
-CONTENT_LENGTH_FIELD = b'Content-Length: '
+BUFF_SIZE = 8192
+PORT = 8080
 def main():
     server_setup()
     run_server()
     server_socket.close()
 
 def server_setup():
-    server_socket.bind(("localhost", 8080))
+    server_socket.bind(("localhost", PORT))
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.listen(3)
     print("Se estableció correctamente la conexión")
@@ -51,14 +51,15 @@ def recieve_message(receive_socket):
     return message
 
 def get_initial_message(receive_socket):
-    BUFF_SIZE = 8192
     initial_message = receive_socket.recv(BUFF_SIZE)
     return initial_message
 
 def get_header(initial_message):
+    HTTP_HEADER_DELIMITER = b'\r\n\r\n'
     return initial_message[:find_bytes_in_bytes(initial_message, HTTP_HEADER_DELIMITER)]
 
 def get_content_length_field(head):
+    CONTENT_LENGTH_FIELD = b'Content-Length: '
     start = find_bytes_in_bytes(head, CONTENT_LENGTH_FIELD)
     if start == -1:
         return len(head)
@@ -74,7 +75,7 @@ def find_bytes_in_bytes(bytes, search_bytes, start=0):
     return -1
 
 def get_rest_of_message(receive_socket, initial_message, size):
-    BUFF_SIZE = 8192
+    
     data = initial_message
     while size - len(data) > 0:
         packet = receive_socket.recv(BUFF_SIZE)
