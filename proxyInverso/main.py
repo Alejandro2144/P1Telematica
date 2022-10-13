@@ -1,12 +1,11 @@
 import socket
-from sqlite3 import connect
 import threading
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-SERVER_IP = "54.211.10.255"
+SERVER_IP = "3.95.202.86"
 SERVER_PORT = 8080
 HTTP_HEADER_DELIMITER = b'\r\n\r\n'
-CONTENT_LENGTH_FIELD = 'Content-Length: '
+CONTENT_LENGTH_FIELD = b'Content-Length: '
 def main():
     server_setup()
     run_server()
@@ -18,42 +17,71 @@ def server_setup():
     server_socket.listen(3)
     print("Se estableció correctamente la conexión")
 
-def handle_connection(socket_conection, direction):
+def handle_connection(client_conection, direction):
+    data_received = receive_client_request(client_conection, direction)
+    server_conection = forward_client_request_to_server(data_received)
+    server_response = get_server_response(server_conection)
+    send_server_response_to_client(client_conection, server_response)
+
+def receive_client_request(client_conection, direction):
     print(f'Conectado {direction[0]}:{direction[1]}')
-    data_recevived = recv_message(socket_conection)
-    # print(data_recevived)
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(((SERVER_IP, SERVER_PORT)))
-    #Reconocer 
-    url = ('HEAD '+ data_recevived.decode().split('\r\n')[0].split()[1] + ' HTTP/1.1\r\nHost: '+SERVER_IP+':'+str(SERVER_PORT)+'\r\n\r\n').encode()
-    client_socket.sendall(url)
-    msg = recv_message(client_socket)
-    head = msg.decode().split('\r\n')
-    length = len(msg)
-    for headers in head:
-        if headers.startswith(CONTENT_LENGTH_FIELD):
-            length = int(headers.split()[1])
-    client_socket.sendall(data_recevived)
-    data = recv_message_with_size(client_socket, length)
-    socket_conection.sendall(data)
+    return recieve_message(client_conection)
+
+def forward_client_request_to_server(data_received):
+    server_conection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_conection.connect(((SERVER_IP, SERVER_PORT)))
+    server_conection.sendall(data_received)
+    return server_conection
+
+def get_server_response(server_conection):
+    server_response = recieve_message(server_conection)
+    server_conection.close()
+    return server_response
+
+def send_server_response_to_client(client_conection, server_response):
+    client_conection.sendall(server_response)
     print('Desconectado')
-    socket_conection.close()
+    client_conection.close()
 
-def recv_message(recv_socket):
-    BUFF_SIZE = 8192
-    packet = recv_socket.recv(BUFF_SIZE)
-    return packet
+def recieve_message(receive_socket):
+    initial_message = get_initial_message(receive_socket)
+    head = get_header(initial_message)
+    size = get_content_length_field(head)
+    message = get_rest_of_message(receive_socket, initial_message, size)
+    return message
 
-def recv_message_with_size(recv_socket, size):
+def get_initial_message(receive_socket):
     BUFF_SIZE = 8192
-    data = b''
+    initial_message = receive_socket.recv(BUFF_SIZE)
+    return initial_message
+
+def get_header(initial_message):
+    return initial_message[:find_bytes_in_bytes(initial_message, HTTP_HEADER_DELIMITER)]
+
+def get_content_length_field(head):
+    start = find_bytes_in_bytes(head, CONTENT_LENGTH_FIELD)
+    if start == -1:
+        return len(head)
+    start += len(CONTENT_LENGTH_FIELD)
+    end = find_bytes_in_bytes(head, b'\r\n', start)
+    print(head[start:end].decode())
+    return len(head) + int(head[start:end].decode())
+
+def find_bytes_in_bytes(bytes, search_bytes, start=0):
+    for i in range(start, len(bytes)):
+        if bytes[i:i+len(search_bytes)] == search_bytes:
+            return i
+    return -1
+
+def get_rest_of_message(receive_socket, initial_message, size):
+    BUFF_SIZE = 8192
+    data = initial_message
     while size - len(data) > 0:
-        packet = recv_socket.recv(BUFF_SIZE)
+        packet = receive_socket.recv(BUFF_SIZE)
         data += packet
-        print(data)
         print(size, len(data))
+    print(data)
     return data
-
 
 def get_API_data(client_socket):
     pass
