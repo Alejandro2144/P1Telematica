@@ -1,18 +1,16 @@
 import socket
 import threading
+import constants
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-SERVER_IP = "3.95.202.86"
-SERVER_PORT = 8080
-BUFF_SIZE = 8192
-PORT = 8080
+
 def main():
     server_setup()
     run_server()
     server_socket.close()
 
 def server_setup():
-    server_socket.bind(("localhost", PORT))
+    server_socket.bind(("localhost", constants.PORT))
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.listen(3)
     print("Se estableció correctamente la conexión")
@@ -29,7 +27,7 @@ def receive_client_request(client_conection, direction):
 
 def forward_client_request_to_server(data_received):
     server_conection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_conection.connect(((SERVER_IP, SERVER_PORT)))
+    server_conection.connect(((constants.SERVER_IP, constants.SERVER_PORT)))
     server_conection.sendall(data_received)
     return server_conection
 
@@ -51,7 +49,7 @@ def recieve_message(receive_socket):
     return message
 
 def get_initial_message(receive_socket):
-    initial_message = receive_socket.recv(BUFF_SIZE)
+    initial_message = receive_socket.recv(constants.BUFF_SIZE)
     return initial_message
 
 def get_header(initial_message):
@@ -78,7 +76,7 @@ def get_rest_of_message(receive_socket, initial_message, size):
     
     data = initial_message
     while size - len(data) > 0:
-        packet = receive_socket.recv(BUFF_SIZE)
+        packet = receive_socket.recv(constants.BUFF_SIZE)
         data += packet
         print(size, len(data))
     print(data)
