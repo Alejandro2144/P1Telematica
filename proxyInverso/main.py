@@ -16,7 +16,7 @@ def main():
     server_socket.close()
 
 def server_setup():
-    server_socket.bind(("localhost", constants.PORT))
+    server_socket.bind((constants.SERVERS_PRIVATE_IP, constants.PORT))
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.listen(3)
     log("Se estableció correctamente la conexión")
