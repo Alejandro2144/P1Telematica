@@ -15,11 +15,11 @@ def handle_connection(client_conection, direction, SERVER_IP, SERVER_PORT):
             cache.insert(data_received, server_response, len(data_received)+len(server_response))
         send_server_response_to_client(client_conection, server_response)
     except socket.error or ConnectionRefusedError as exc:
-            log(exc)
-            internal_error = b'HTTP/1.1 500 Internal Server Error'
-            log(internal_error)
-            client_conection.sendall(internal_error)
-            client_conection.close()
+        log(exc)
+        internal_error = b'HTTP/1.1 500 Internal Server Error'
+        log(internal_error)
+        client_conection.sendall(internal_error)
+        client_conection.close()
 
 def receive_client_request(client_conection, direction):
     log(f'Conectado {direction[0]}:{direction[1]}')

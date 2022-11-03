@@ -12,6 +12,10 @@ BUFF_SIZE: El tamaño del buffer que usa sockets para coger request. (No hacerlo
 
 SERVERS: Una lista de tuplas de servidores y su puertos.
 
+SERVERS_PRIVATE_IP: IP privada del servidor que esta corriendo el proxy inverso.
+
+PORT: El puerto que quieres usar para la comunicación del proxy inverso.
+
 TTL: El time to live del cache del sistema.
 
 CACHE_SIZE: El tamaño del cache.

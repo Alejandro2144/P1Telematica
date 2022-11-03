@@ -3,7 +3,6 @@ import threading
 import constants
 from Queue import Queue
 from methods import find_bytes_in_bytes
-from methods import log
 
 class LRUCache():
     def __init__(self):
