@@ -1,5 +1,5 @@
 import constants
-from methods import find_bytes_in_bytes
+from methods import find_bytes_in_bytes, get_header
 
 def receive_message(receive_socket):
     initial_message = get_initial_message(receive_socket)
@@ -11,10 +11,6 @@ def receive_message(receive_socket):
 def get_initial_message(receive_socket):
     initial_message = receive_socket.recv(constants.BUFF_SIZE)
     return initial_message
-
-def get_header(initial_message):
-    HTTP_HEADER_DELIMITER = b'\r\n\r\n'
-    return initial_message[:find_bytes_in_bytes(initial_message, HTTP_HEADER_DELIMITER)]
 
 def get_content_length_field(head):
     CONTENT_LENGTH_FIELD = b'Content-Length: '

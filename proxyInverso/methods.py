@@ -16,3 +16,11 @@ def find_bytes_in_bytes(cur_bytes, search_bytes, start=0, end=-1):
             if cur_bytes[i:i+len(search_bytes)] == search_bytes:
                 return i
         return -1
+
+def get_header(initial_message):
+    HTTP_HEADER_DELIMITER = b'\r\n\r\n'
+    return initial_message[:find_bytes_in_bytes(initial_message, HTTP_HEADER_DELIMITER)]
+
+def get_file(server_response):
+    HTTP_HEADER_DELIMITER = b'\r\n\r\n'
+    return server_response[find_bytes_in_bytes(server_response, HTTP_HEADER_DELIMITER)+4:]
